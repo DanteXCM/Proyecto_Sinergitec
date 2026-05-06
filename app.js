@@ -22,7 +22,16 @@ app.use(session({
 }));
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
-const db = mysql.createPool(process.env.DATABASE_URL);
+const db = mysql.createPool({
+    host: process.env.MYSQLHOST,
+    port: process.env.MYSQLPORT,
+    user: process.env.MYSQLUSER,
+    password: process.env.MYSQLPASSWORD,
+    database: process.env.MYSQLDATABASE,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
 // --- RUTA DE LOGIN ---
 app.get('/', (req, res) => {
