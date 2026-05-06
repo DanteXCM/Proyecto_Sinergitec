@@ -206,7 +206,10 @@ app.get('/recolector/dashboard', async (req, res) => {
             rutas,
             mapboxToken: process.env.MAPBOX_TOKEN
         });
-    } catch (e) { res.status(500).send("Error al cargar ruta"); }
+    } catch (e) { 
+        console.error('Recolector dashboard error:', e.message, e);
+        res.status(500).send("Error al cargar ruta"); 
+    }
 });
 
 app.post('/recolector/actualizar-estado', async (req, res) => {
