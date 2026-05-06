@@ -52,6 +52,7 @@ app.post('/login', async (req, res) => {
             res.send('Credenciales incorrectas. <a href="/">Volver</a>');
         }
     } catch (e) {
+        console.error('Login error:', e.message, e);
         res.status(500).send("Error interno del servidor");
     }
 });
