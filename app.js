@@ -22,12 +22,7 @@ app.use(session({
 }));
 
 // --- CONEXIÓN A LA BASE DE DATOS ---
-const db = mysql.createPool({
-    host: 'localhost',
-    user: 'root',
-    password: '', // Asegúrate de que coincida con tu config de MySQL
-    database: 'trazabilidad_db'
-});
+const db = mysql.createPool(process.env.DATABASE_URL);
 
 // --- RUTA DE LOGIN ---
 app.get('/', (req, res) => {
@@ -299,9 +294,10 @@ app.get('/logout', (req, res) => {
 });
 
 // --- INICIO DEL SERVIDOR ---
-app.listen(3000, () => {
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
     console.log('-------------------------------------------');
     console.log('🚀 Sinergitec Logistics operando en:');
-    console.log('👉 http://localhost:3000');
+    console.log(`👉 http://localhost:${PORT}`);
     console.log('-------------------------------------------');
 });
