@@ -139,7 +139,10 @@ app.get('/administrador/dashboard', async (req, res) => {
             asignadas,
             mapboxToken: process.env.MAPBOX_TOKEN
         });
-    } catch (e) { res.status(500).send("Error en el panel de administrador"); }
+    } catch (e) { 
+        console.error('Admin dashboard error:', e.message, e);
+        res.status(500).send("Error en el panel de administrador"); 
+    }
 });
 
 app.get('/administrador/asignar/:ids', async (req, res) => {
