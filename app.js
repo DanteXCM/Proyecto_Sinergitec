@@ -44,10 +44,16 @@ app.post('/login', async (req, res) => {
         const [rows] = await db.query('SELECT * FROM usuarios WHERE email = ? AND password = ?', [email, password]);
         if (rows.length > 0) {
             const user = rows[0];
+            const roleMap = {
+                'admin': 'administrador',
+                'clinic': 'clinica',
+                'collector': 'recolector'
+            };
+            const routeRole = roleMap[user.rol] || user.rol;
             req.session.userId = user.id;
             req.session.userNombre = user.nombre;
-            req.session.rol = user.rol;
-            res.redirect(`/${user.rol}/dashboard`);
+            req.session.rol = routeRole;
+            res.redirect(`/${routeRole}/dashboard`);
         } else {
             res.send('Credenciales incorrectas. <a href="/">Volver</a>');
         }
