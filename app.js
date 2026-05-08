@@ -178,7 +178,7 @@ app.post('/administrador/confirmar-asignacion', async (req, res) => {
         const recolectorIdNum = parseInt(recolectorId, 10);
 
         // 1. Insertar las nuevas asignaciones
-        const valoresInsert = numericIds.map(id => [recolectorIdNum, id, 'Pendiente']);
+        const valoresInsert = numericIds.map(id => [recolectorIdNum, id, 'Asignada']);
         await connection.query('INSERT INTO asignaciones (recolector_id, solicitud_id, estado_asignacion) VALUES ?', [valoresInsert]);
 
         // 2. Actualizar el estado de las solicitudes originales
