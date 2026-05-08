@@ -275,7 +275,7 @@ app.get('/generar-qr/:id', async (req, res) => {
         if (rows.length === 0) return res.status(404).send("Solicitud no encontrada");
         
         const sol = rows[0];
-        const qrDataURL = await QRCode.toDataURL(`${idSolicitud}`);
+        const qrDataURL = await QRCode.toDataURL(`SOL-${idSolicitud}`);
         
         res.send(`
             <html>
