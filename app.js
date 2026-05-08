@@ -212,7 +212,7 @@ app.post('/administrador/confirmar-asignacion', async (req, res) => {
 app.get('/recolector/dashboard', async (req, res) => {
     if (req.session.rol !== 'recolector') return res.redirect('/');
     try {
-        const [rutas] = await db.query(`
+        const [rutasRaw] = await db.query(`
             SELECT 
                 a.solicitud_id AS asignacion_id, 
                 a.estado_asignacion AS estado_asignacion, 
@@ -229,6 +229,14 @@ app.get('/recolector/dashboard', async (req, res) => {
             WHERE a.recolector_id = ? AND a.estado_asignacion != 'Entregada'
         `, [req.session.userId]);
         
+        // Normalizar datos para evitar fallos de validación estricta en el frontend
+        const rutas = rutasRaw.map(r => ({
+            ...r,
+            asignacion_id: parseInt(r.asignacion_id, 10), // Forzar a número estricto
+            id: parseInt(r.asignacion_id, 10),            // Respaldo por si el frontend busca .id
+            estado: r.estado_asignacion                   // Respaldo por si el frontend busca .estado
+        }));
+
         // Calcular la distancia (en línea recta) desde el Laboratorio Central
         const labLat = 19.366668413641182;
         const labLng = -99.19010865315482;
