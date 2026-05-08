@@ -155,13 +155,45 @@ app.get('/administrador/asignar/:ids', async (req, res) => {
 
 app.post('/administrador/confirmar-asignacion', async (req, res) => {
     const { recolectorId, solicitudesIds } = req.body;
-    const idsArray = solicitudesIds.split(',');
+
+    if (!recolectorId || !solicitudesIds) {
+        return res.status(400).send("Faltan datos para la asignación. Se requiere un recolector y al menos una solicitud.");
+    }
+
+    // Filtra IDs vacíos que podrían resultar de comas extra (ej. "1,2,")
+    const idsArray = solicitudesIds.split(',').filter(id => id.trim() !== '');
+
+    if (idsArray.length === 0) {
+        return res.status(400).send("No se proporcionaron IDs de solicitud válidos.");
+    }
+
+    let connection;
     try {
-        const valores = idsArray.map(id => [recolectorId, id, 'Pendiente']);
-        await db.query('INSERT INTO asignaciones (recolector_id, solicitud_id, estado_asignacion) VALUES ?', [valores]);
-        await db.query('UPDATE solicitudes SET estado = "Asignada" WHERE id IN (?)', [idsArray]);
+        // Usar una transacción para asegurar que ambas operaciones (INSERT y UPDATE) se completen con éxito.
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        // Convertir IDs a números para evitar errores de tipo de dato en la BD.
+        const numericIds = idsArray.map(id => parseInt(id, 10));
+        const recolectorIdNum = parseInt(recolectorId, 10);
+
+        // 1. Insertar las nuevas asignaciones
+        const valoresInsert = numericIds.map(id => [recolectorIdNum, id, 'Pendiente']);
+        await connection.query('INSERT INTO asignaciones (recolector_id, solicitud_id, estado_asignacion) VALUES ?', [valoresInsert]);
+
+        // 2. Actualizar el estado de las solicitudes originales
+        await connection.query('UPDATE solicitudes SET estado = "Asignada" WHERE id IN (?)', [numericIds]);
+
+        await connection.commit();
         res.redirect('/administrador/dashboard');
-    } catch (e) { res.status(500).send("Error al procesar asignación"); }
+
+    } catch (e) {
+        if (connection) await connection.rollback(); // Si algo falla, revertir los cambios.
+        console.error('Error al procesar la asignación:', e); // Registrar el error detallado para depuración.
+        res.status(500).send("Error al procesar la asignación. El error ha sido registrado en el servidor.");
+    } finally {
+        if (connection) connection.release(); // Liberar la conexión de vuelta al pool.
+    }
 });
 
 // --- DASHBOARD RECOLECTOR (MAPA Y VALIDACIÓN QR) ---
