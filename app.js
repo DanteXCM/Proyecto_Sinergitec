@@ -5,6 +5,9 @@ const path = require('path');
 const QRCode = require('qrcode'); // Librería para generar los códigos QR
 require('dotenv').config();
 
+// Forzar la zona horaria a la de México para todo el servidor
+process.env.TZ = 'America/Mexico_City';
+
 const app = express();
 
 // --- CONFIGURACIÓN DE EXPRESS ---
@@ -30,7 +33,8 @@ const db = mysql.createPool({
     database: process.env.MYSQLDATABASE,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    timezone: 'Z' // Asegura que las fechas de Railway se lean correctamente como UTC
 });
 
 // --- PARCHE AUTOMÁTICO PARA LA BASE DE DATOS ---
@@ -322,7 +326,7 @@ app.get('/generar-qr/:id', async (req, res) => {
                     <div class="id-text">SOL-${idSolicitud}</div>
                     <div class="detalle-container">
                         <div class="detalle-item"><strong>Muestra:</strong> ${sol.tipo_muestra}</div>
-                        <div class="detalle-item"><strong>Pedido:</strong> ${new Date(sol.fecha_creacion).toLocaleDateString()} - ${new Date(sol.fecha_creacion).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                <div class="detalle-item"><strong>Pedido:</strong> ${new Date(sol.fecha_creacion).toLocaleDateString('es-MX')} - ${new Date(sol.fecha_creacion).toLocaleTimeString('es-MX', {hour: '2-digit', minute:'2-digit', hour12: true})}</div>
                         <div class="detalle-item"><strong>Prioridad:</strong> <span class="urgencia-tag">${sol.urgencia}</span></div>
                     </div>
                     <img src="${qrDataURL}" class="qr-img">
